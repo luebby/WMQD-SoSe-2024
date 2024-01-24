@@ -1,7 +1,7 @@
 # Installiert die nötigen R Pakete
 install.packages(c("mosaic", "lsr", "GGally", "corrplot", 
                    "googlesheets4", "readxl", "here",
-                   "DT", "webshot2",
+                   "DT", "webshot2","ggsci",
                    "tinytex", "rmarkdown", "knitr",
                    "markdown","shiny", "gridExtra"))
 

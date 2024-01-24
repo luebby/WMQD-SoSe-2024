@@ -82,7 +82,7 @@ Sei $\pi$ der Anteil der Fälle aus der Impfgruppe, hier $8$ von $170$, dann kan
 $$IW=\frac{1-2\pi}{1- \pi}.$$
 
 
-### Frage
+#### Fragen
 
 - Wie groß ist $\pi$, wenn die Imfung nicht wirken würde?
 

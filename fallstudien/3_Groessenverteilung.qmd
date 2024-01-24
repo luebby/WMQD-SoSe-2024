@@ -1,0 +1,261 @@
+---
+title: "Wie groß sind wir?"
+lang: de
+author: "Ihr Name"
+date: "`r Sys.Date()`"
+format: 
+  html:
+    toc: true
+    html-math-method: katex
+  pdf:
+    toc: true
+    number-sections: false
+    colorlinks: true 
+    papersize: a4
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(mosaic)
+```
+
+# Menschliche Größe
+
+Manche Menschen haben eine hohe Körpergröße, manche eine eher kleine. 
+
+Wie groß (in cm) ein Mensch wird, hängt von vielen Faktoren ab, z.B. Ernährung, aber auch von den Genen -- und ist im Laufe der Zeit gestiegen.
+
+Für die Zielpopulation (biologische) Frauen zwischen 20 und 25 gehen wir von einem Mittelwert von 168 cm aus^[Siehe z.B. [Statistisches Bundesamt](https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Gesundheit/Gesundheitszustand-Relevantes-Verhalten/Tabellen/liste-koerpermasse.html)] -- bei einer Standardabweichung von 6 cm.^[Hier liegen keine *offiziellen* Daten vor, siehe aber z.B. [https://doi.org/10.1016/j.ehb.2007.02.002](https://doi.org/10.1016/j.ehb.2007.02.002) oder [https://doi.org/10.7554/eLife.20320](https://doi.org/10.7554/eLife.20320).]
+
+#### Frage
+
+- Recherchieren Sie die durchschnittliche Körpergröße eines 20--25-jährigen (biologischen) Mannes.
+
+## Normalverteilung
+
+Es gibt gute Gründe dafür (siehe z.B. [Our World in Data](https://ourworldindata.org/human-height#height-is-normally-distributed)), davon auszugehen, dass die Größe normalverteilt ist.
+
+```{r}
+gf_dist("norm", mean = 168, sd = 6) |> 
+  gf_labs(title = "Größenverteilung Frauen",
+          subtitle = "Dichtefunktion", x = "x (in cm)", y = "f(x)")
+```
+
+D.h., die Größe der weiblichen Bevölkerung verteilt sich unimodal und symmetrisch um den Mittelwert, kleinere Abweichung zum Mittelwert kommen häufig vor.
+
+### Verteilungsfunktion
+
+Die Verteilungsfunktion $F(x)$ sagt, wie wahrscheinlich es ist, einen Wert $\leq x$ zu beobachten: $F(x)=Pr(X\leq x)$, und damit $0\leq F(x) \leq 1$.
+
+Für unsere Größenverteilung:
+
+```{r}
+gf_dist("norm", mean = 168, sd = 6, kind = "cdf") |> 
+  gf_labs(title = "Größenverteilung Frauen",
+          subtitle = "Verteilungsfunktion", x = "x (in cm)", y = "F(x)")
+```
+
+Bei einer Normalverteilung gilt:
+
+- Dichtefunktion: 
+$$f(x)=\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}$$
+- Verteilungsfunktion:
+$$F(x) = \int_{-\infty}^x f(u)\, du= \int_{-\infty}^x \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(u-\mu)^2}{2\sigma^2}} \,du$$
+
+Dabei ist: 
+
+- $\mu=E(X)=\int_{-\infty}^{\infty} x \cdot f(x) \, dx$ der Mittelwert der Verteilung (Erwartungswert).
+  
+- $\sigma^2=Var(X)=\int_{-\infty}^{\infty} (x-\mu)^2 \cdot f(x) \, dx$ die Varianz der Verteilung.
+
+#### Frage
+
+- Für 20--25-jährige Männer gehen wir von $\mu=181$ cm und $\sigma=7.5$ cm aus:
+```{r}
+gf_dist("norm", mean = 181, sd = 7.5) |> 
+  gf_labs(title = "Größenverteilung Männer",
+          subtitle = "Dichtefunktion", x = "x (in cm)", y = "f(x)")
+```
+
+Was hat sich in der Verteilung gegenüber der Verteilung der Frauen geändert, was nicht?
+
+## Wahrscheinlichkeiten bestimmen
+
+Wenn die Daten normalverteilt sind, und wir $\mu$ und $\sigma$ kennen, können wir Wahrscheinlichkeiten bestimmen, z.B., dass eine Frau kleiner oder gleich 160 cm ist:
+
+```{r}
+xpnorm(q = 160, mean = 168, sd = 6)
+```
+
+#### Fragen
+
+- Ändern Sie den Code so, dass Sie die Wahrscheinlichkeit bestimmen können, dass eine Frau kleiner oder gleich 180 cm ist:
+
+```{r}
+xpnorm(q = 160, mean = 168, sd = 6)
+```
+
+- Wie groß ist die Wahrscheinlichkeit, dass eine Frau größer als 180 cm ist?
+
+## Quantile bestimmen
+
+Die Quantilsfunktion, $q=F^{-1}(p)$, gibt den Wert $q$ zurück, der mit einer Wahrscheinlichkeit $p$ nicht überschritten wird. So sind z.B. unter diesen Annahmen 90 % der Frauen kleiner oder gleich `r xqnorm(p = 0.9, mean = 168, sd = 6) |> round(2)` cm:
+
+```{r}
+xqnorm(p = 0.9, mean = 168, sd = 6)
+```
+
+#### Fragen
+
+- Was ist der Wert der Verteilungsfunktion an der Stelle `r xqnorm(p = 0.9, mean = 168, sd =6)`? 
+
+- Ändern Sie den Code so, dass Sie sagen können, ab wann eine Frau zu den 1 % größten gehört.
+
+```{r}
+xpnorm(q = 160, mean = 168, sd = 6)
+```
+
+## z-Wert
+
+Über 
+
+$$z=\frac{x-\mu}{\sigma}$$ 
+
+(R-Befehl `zscore()`) kann eine beliebige Verteilung in eine transformiert werden, für die $\mu_z=0$ und $\sigma_z=1$ gilt. Bei einer Normalverteilung spricht mensch in diesem Fall von einer Standardnormalverteilung. 
+Z.B. hat eine 174 cm große Frau einen z-Wert von +1:
+
+$$z=\frac{x-\mu}{\sigma}=\frac{174-168}{6}=+1$$ 
+
+D.h., ihre Größe ist eine Standardabweichung über dem Mittelwert
+
+#### Fragen
+
+- Berechnen und interpretieren Sie den z-Wert einer Frau, die 156 cm groß ist.
+
+- Berechnen Sie den z-Wert Ihrer Größe in R. Für die Damen $\mu=168$ und $\sigma=6$, für die Herren $\mu=181$ und $\sigma=7.5$
+
+```{r}
+# Codefeld für z-Wert
+
+```
+
+## 68-95-99,7%-Regel
+
+Bei einer Normalverteilung liegt die Wahrscheinlichkeit für einen Wert innerhalb einer Standardabweichung um den Mittelwert bei ca. 68 %:
+
+```{r}
+xpnorm(c(-1, 1))
+```
+
+#### Fragen
+
+- Ändern Sie den Code so, dass Sie aussagen können, wie wahrscheinlich ein Wert innerhalb von zwei Standardabweichungen um den Mittelwert ist.
+
+```{r}
+xpnorm(c(-1, 1))
+```
+
+- Ändern Sie den Code so, dass Sie aussagen können, wie wahrscheinlich ein Wert innerhalb von drei Standardabweichungen um den Mittelwert ist.
+
+```{r}
+xpnorm(c(-1, 1))
+```
+
+- In welchem Größenbereich liegen ungefähr 95 % der Frauen? 
+
+## Einstieg in Bayes (Exkurs)
+
+Simulieren wir eine Datentabelle von jeweils 10000 Frauen und Männern, mit normalverteilter Größe und $\mu_F=168$, $\sigma_F=6$ bzw. $\mu_M=181$ $\sigma_M=7.5$
+
+```{r}
+# Zufallszahlengenerator festlegen
+set.seed(1896)
+
+# Daten simulieren
+Daten <- data.frame(
+  geschlecht = c(rep("Frau",10000), 
+                 rep("Mann", 10000)),
+  groesse = c(rnorm(n = 10000, mean = 168, sd = 6), 
+              rnorm(n = 10000, mean = 181, sd = 7.5))
+)
+
+# Kennzahlen ausgeben
+favstats(groesse ~ geschlecht, data = Daten)
+```
+
+#### Frage
+
+- Angenommen vor Ihnen steht eine Person, die 185 cm groß ist, und Sie können das Geschlecht nicht erkennnen. Was schätzen Sie, welches Geschlecht hat die Person wahrscheinlich?
+
+---
+
+```{r}
+gf_density( ~ groesse, fill = ~ geschlecht, data = Daten) |>
+  gf_vline(xintercept = 185)
+```
+
+Der Wert der Dichtefunktion ist für Männer an der Stelle $185$ viel höher als für Frauen:
+
+```{r}
+# Frauen
+dnorm(185, mean = 168, sd = 6)
+# Männer
+dnorm(185, mean = 181, sd = 7.5)
+```
+
+#### Fragen
+
+- Wären Sie sich bei einer Größe von 174.5 cm bzgl. des Geschlechts *sicher*?
+
+```{r}
+gf_density( ~ groesse, fill = ~ geschlecht, data = Daten) |>
+  gf_vline(xintercept = 174.5)
+```
+
+- Würde sich Ihre Einschätzung ändern, wenn z.B. 90 % der Zielpopulation weiblich wären?
+
+### Satz von Bayes
+
+Der Satz von Bayes ermöglicht die Unsicherheit über $Pr(y)$ auf Basis von Information über $x$ zu aktualisieren: $Pr(y|x)$. Dabei ist $Pr(y)$ die *a priori* Wahrscheinlichkeit von $y$ und $Pr(y|x)$ die *a posteriori* Wahrscheinlichkeit von $y$, bei bekanntem $x$.
+
+Auch lassen sich bedingte Wahrscheinlichkeiten umrechnen, d.h., aus $Pr(x|y)$ kann $Pr(y|x)$ bestimmt werden.
+
+$$Pr(y|x)=\frac{Pr(x|y)\cdot Pr(y)}{Pr(x)}$$
+
+### Naive Bayes
+
+Auch wenn die Dichtefunktion $f$ keine Wahrscheinlichkeit $Pr$ ist, können wir jetzt auf Basis der bekannten Größenverteilung je Geschlecht und der angenommenen a priori Verteilung der Geschlechter die a posteriori Verteilung des Geschlechts gegeben die Größe bestimmen und damit klassifizieren:
+
+$$
+Pr(Geschlecht|Groesse) =\frac{Pr(Groesse|Geschlecht)\cdot Pr(Geschlecht)}{Pr(Groesse)} 
+$$
+Der Nennen spielt für die Zuordnung keine Rolle. Für 174.5 cm und a priori 90 % weiblich ergibt sich dann:
+
+```{r}
+# Frau
+dnorm(174.5, mean = 168, sd = 6) * 0.9
+# Mann
+dnorm(174.5, mean = 181, sd = 7.5) * (1-0.9)
+# Bzw. als Wahrscheinlichkeiten:
+# Frau
+dnorm(174.5, mean = 168, sd = 6) * 0.9 / 
+  (dnorm(174.5, mean = 168, sd = 6) * 0.9 + dnorm(174.5, mean = 181, sd = 7.5) * (1-0.9))
+# Mann
+dnorm(174.5, mean = 181, sd = 7.5) * (1-0.9) / 
+  (dnorm(174.5, mean = 168, sd = 6) * 0.9 + dnorm(174.5, mean = 181, sd = 7.5) * (1-0.9))
+```
+
+#### Fragen
+
+- Welches Geschlecht ist hier wahrscheinlicher?
+
+- Wie würde sich die Wahrscheinlichkeit für eine Frau ändern, wenn die a priori Wahrscheinlichkeit, dass es eine Frau ist, kleiner wäre?
+
+---
+
+**Hinweis:** Das Geschlecht einer Person ist ein komplexes Thema. Anstelle von automatischer und unsicherer Klassifikation oder Klischee-Zuordnungen, fragen Sie bitte einfach die Person, welchem Geschlecht sie sich selbst zuordnet!
+
+
+
+

@@ -1,0 +1,267 @@
+---
+title: "Energie sparen (!)"
+lang: de
+author: "Ihr Name"
+date: "`r Sys.Date()`"
+format: 
+  html:
+    toc: true
+    html-math-method: katex
+  pdf:
+    toc: true
+    number-sections: false
+    colorlinks: true 
+    papersize: a4
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(mosaic)
+library(here)
+```
+
+## Energiearmes fahren?
+
+#### Frage
+
+- Womit hängt der Energieverbrauch (z.B. Benzin) beim Autofahren zusammen?
+
+## Versuchsdaten
+
+Das Buch *Transportation Energy Data Book Edition 39* liefert Daten für den Zusammenhang zwischen Geschwindigkeit und Benzinverbrauch: 
+[https://tedb.ornl.gov/wp-content/uploads/2021/02/TEDB_Ed_39.pdf#page=136](https://tedb.ornl.gov/wp-content/uploads/2021/02/TEDB_Ed_39.pdf#page=136)
+
+Diese werden hier abgeschrieben und in der Datentabelle `TEDB` hinterlegt:
+```{r}
+TEDB <- data.frame(
+  mpg = c(24.4, 27.9, 30.5, 31.7, 31.2, 31.0, 31.6,
+          32.4, 32.4, 31.4, 29.2, 26.8, 24.8),
+  mph = seq(from = 15, to = 75, by = 5)
+)
+# Datenstruktur
+str(TEDB)
+# Obere 6 Beobachtungen
+head(TEDB)
+```
+
+#### Fragen
+
+- Handelt es sich um Daten von aktuellen^[Baujahr ab 2015] Fahrzeugen?
+
+- Sind es die Verbrauchsdaten eines Fahrzeugs?
+
+### Umrechnung
+
+Die Daten liegen im amerikanischen Messsystem vor: *miles per gallon* (`mpg`) und *miles per hour* (`mph`).
+
+Zur besseren Lesbarkeit sollten wir diese in die uns bekannten Einheiten umrechnen. 
+Eine Meile entspricht 1.609344 km, eine (amerikanische) Gallone 3.785411784 l. 
+
+Über `mutate()` können Variablen erzeugt oder verändert werden. So können wir die Variablen auch für unsere Datentabelle `TEDB` ergänzen.
+
+```{r}
+TEDB <- TEDB |>
+  mutate(kmh = mph * 1.609344) |>
+  mutate(l100km = (100 * 3.785411784) / (1.609344 * mpg))
+```
+
+#### Frage
+
+- Ist der Zusammenhang zwischen `l100km` und `mpg` linear?
+
+```{r}
+# Streudiagramm
+
+# Streudiagramm mit Glättungslinie
+```
+
+Zusammenhang zwischen *Reichweite* und *Verbrauch* über ein Liniendiagramm (`gf_line()`) für eine Reichweite von von 0 bis 100 (`seq()`):
+
+```{r}
+# Erzeuge Vektor rewichweite als Zahlenfolge von 1 bis 100
+reichweite <- seq(from = 1, to = 100)
+# Berechne verbrauch (in l/100km) als Funktion der Reichweite (in m/g)
+verbrauch <- (100 * 3.785411784) / (1.609344 * reichweite)
+# Liniendiagramm
+gf_line(verbrauch ~ reichweite)
+```
+
+
+
+### Zusammenhang Geschwindigkeit und Verbrauch
+
+Streudiagramm (`gf_point()`):
+
+```{r}
+gf_point(l100km ~ kmh, data = TEDB)
+```
+
+#### Fragen
+
+- Wofür steht ein Punkt in der Abbildung?
+
+- Ist der Zusammenhang zwischen `kmh` und `l100km` linear?
+
+- Bei welcher Geschwindigkeit ist der Verbrauch minimal?
+
+***
+
+Dem Streudiagramm können wir eine Glättungslinie (`gf_smooth()`) sowie Achsenbeschriftungen und Titel (`gf_labs()`) hinzufügen:
+```{r}
+gf_point(l100km ~ kmh, data = TEDB) |>
+  gf_smooth() |>
+  gf_labs(x = "Geschwindigkeit in km/h", 
+          y = "Verbrauch in l/100km",
+          title = "Verbrauch je Geschwindkeit", 
+          subtitle ="Quelle: Transportation Energy Data Book, Edition 39, Tablle 4.34")
+```
+
+Über `gf_lims()` können die Achsenskalierungen angepasst werden, z.B. die y-Achse so, dass diese bei 0 anfängt und bei 10 aufhört.
+
+```{r}
+gf_point(l100km ~ kmh, data = TEDB) |>
+  gf_smooth() |>
+  gf_lims(y = c(0,10)) |>
+  gf_labs(x = "Geschwindigkeit in km/h", 
+          y = "Verbrauch in l/100km",
+          title = "Verbrauch je Geschwindkeit", 
+          subtitle ="Skalierung y-Achse angepasst")
+```
+
+#### Frage
+
+- Welche Vor- und Nachteile hat die geänderte Achsenskalierung?
+
+## Verbrauchsdaten
+
+Andreas Wagener hat für ein paar Monate am Ende einer Autofahrt seine Verbrauchsdaten samt Kovariablen (wie z.B. Temperatur) gesammelt und über [Kaggle](https://www.kaggle.com/datasets/anderas/car-consume) unter der [GPL 2](http://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) Lizenz veröffentlicht. 
+
+
+Einlesen und Kontrolle der Daten:
+```{r}
+# Datei (inkl. Pfad)
+pfad_verbrauch <- here("data", "KaggleDaten_AW.csv")
+# Daten einlesen
+Verbrauch <- read.csv2(pfad_verbrauch)
+# Struktur
+str(Verbrauch)
+# Obere Beobachtungen der Tabelle
+head(Verbrauch)
+```
+
+#### Fragen
+
+- Handelt es sich um eine Beobachtungsstudie oder um ein randomisiertes Experiment?
+
+- Was ist hier eine Beobachtungseinheit?
+
+- Wie viele Beobachtungen liegen vor?
+
+- Wie viele Variablen liegen vor?
+
+- Welches Skalenniveau hat die Variable `consume` (angegebener Verbrauch in l/100km)?
+
+- Welches Skalenniveau hat die Variable `AC` (Klimaanlage)?
+
+### Verbrauch
+
+Ein Histogramm visualisiert die Verteilung der von Andreas Wagener bei seinen Fahrten realisierten Verbräuche:
+
+```{r}
+gf_histogram( ~ consume, data = Verbrauch)
+```
+
+#### Frage
+
+- Was können Sie dem Histogramm entnehmen?
+
+***
+
+### Verteilungs- und Quantilsfunktion
+
+Mit Hilfe von `pdata()` kann für beliebige Verbräuche `q` der Wert der empirischen Verteilungsfunktion $F_n$ ermittelt werden, d.h. hier, der Anteil der Fahrten, in denen der Verbrauch z.B. kleiner oder gleich `q = 10` l war:
+```{r}
+pdata( ~ consume, q = 10, data = Verbrauch)
+```
+
+#### Fragen
+
+Ändern Sie den Code jeweils so, dass Sie die Fragen beantworten können.
+
+- Wie hoch ist der Anteil der Fahrten mit einem Verbrauch kleiner gleich 5l?
+
+```{r}
+pdata( ~ consume, q = 10, data = Verbrauch)
+```
+
+- Wie hoch ist der Anteil der Fahrten mit einem Verbrauch größer als 7.5l?
+
+```{r}
+pdata( ~ consume, q = 10, data = Verbrauch)
+```
+
+***
+
+`qdata()` gibt an, welcher Wert für eine gegebene relative Häufigkeit `p` nicht überschritten wird, d.h. die jeweiligen Quantile. Z.B. gilt für 5% der Fahrten von Andreas Wagener, dass der Verbrauch nicht größer als `r qdata( ~ consume, p = 0.05, data = Verbrauch)` war:
+
+```{r}
+qdata( ~ consume, p = 0.05, data = Verbrauch)
+```
+
+- Mit welchem Verbrauch kam Andreas Wagener in 80% seiner Fahren zurecht?
+
+  Ändern Sie den Code so, dass Sie die Frage beantworten können.
+
+```{r}
+qdata( ~ consume, p = 0.05, data = Verbrauch)
+```
+
+***
+
+`favstats()` liefert einen Überblick über die gängigen Kennzahlen einer metrischen Variable:
+
+```{r}
+favstats( ~ consume, data = Verbrauch)
+```
+
+#### Fragen
+
+- Wie hoch ist der arithmetische Mittelwert?
+
+- In welchem Bereich liegen 50% der Verbräuche?
+
+- In der Datentabelle liegen außerdem noch die Innentemperatur (`temp_inside`) sowie die Außentemperatur vor (`temp_outside`). Bei welcher Temperatur wird die Streuung größer sein?
+
+### Klimaanlage
+
+Ein Boxplot ermöglich den Vergleich der Verbräuche mit und ohne Klimaanlage (`AC`). Diese muss aber zunächst als kategoriale Variable definiert werden.
+
+```{r}
+# Umkodieren der Varbiable
+Verbrauch <- Verbrauch |>
+  mutate(ACrc = case_when(AC == 0 ~ "Nein",
+                          AC == 1 ~ "Ja"))
+
+# Boxplot
+gf_boxplot(consume ~ ACrc, data = Verbrauch)
+# Kennzahlen
+favstats(consume ~ ACrc, data = Verbrauch)
+```
+
+#### Frage
+
+- Was können Sie über einen Vergleich der Verteilungen der Verbräuche mit und ohne Klimaanlage aussagen?
+
+## Your-Turn
+
+Geschwindigkeit und Verbrauch. Wie sieht der Zusammenhang aus?
+
+```{r}
+
+```
+
+
+
+
+

@@ -1,0 +1,171 @@
+---
+title: "Zwei Wahrheiten, eine Lüge"
+lang: de
+author: "Ihr Name"
+date: "`r Sys.Date()`"
+format: 
+  html:
+    toc: true
+    html-math-method: katex
+  pdf:
+    toc: true
+    number-sections: false
+    colorlinks: true 
+    papersize: a4
+---
+
+```{r}
+#| label: setup
+#| include: false
+# Hilfsfunktion. n ist die Anzahl der Versuche
+raten <- function(anzahl = 1) sample(c("Ja", "Nein", "Nein"), size = n, replace = TRUE)
+# Paket mosaic aktivieren
+library(mosaic)
+```
+
+# Lüge erkannt?
+
+Wie gut können wir Lügen erkennen?
+
+Innerhalb Ihrer Gruppe:
+
+1. Eine Person erzählt drei kurze Aussagen über sich. Eine davon ist eine Lüge.
+2. Die Anderen diskutieren welche der drei Aussagen die Lüge ist. Anschließend legen Sie gemeinsam auf einer Skala von 0-10 fest, wie sicher Sie sich sind, die Lüge erkannt zu haben.
+3. Die Person enthüllt, ob die Anderen richtig lagen.
+4. Tragen Sie die Sicherheit und das Ergebnis der Gruppe ein.
+5. Wechseln Sie reihum die Person, die über sich zwei Wahrheiten und eine Lüge erzählt.
+
+Geben Sie die Daten unter [https://forms.gle/gciXvk4KMA1DD3Rw5](https://forms.gle/gciXvk4KMA1DD3Rw5) ein. 
+
+
+## Daten
+
+In `R` erfolgt eine *Zuweisung* über `<-`. Ein Kommentar wird über `#` eingeleitet. Geben wir das Testergebnis unseres Kurses ein.^[*Hinweis*: In der Vorlage steht `n <- 30` und`x <- 20` . Diese Zahlen müssen angepasst werden. Die Zeile `x <- 20` bedeutet: Der Variable `x` wird der Wert `20` zugewiesen (`<-`).]
+
+```{r}
+# Anzahl Beobachtungen:
+n <- 30
+# Anzahl Richtige:
+x <- 20
+```
+
+#### Frage
+
+- Kann `x` größer als `n` sein?
+
+***
+
+`R` kann auch als Taschenrechner benutzt werden:
+
+```{r}
+# Anteil Richtig:
+x/n
+# Anteil Richtig zuweisen:
+p <- x/n
+```
+
+Es gibt jetzt in `R` die Variable `p`, der der Wert `x/n` zugewiesen (`<-`) wurde. Eine Ausgabe erfolgt über ein einfaches `p`.
+
+```{r}
+p
+```
+
+
+#### Frage
+
+- Wie interpretieren Sie das Ergebnis? Was sagt unser Ergebnis über die Fähigkeit Lügen zu erkennen aus?
+
+## Hypothese
+
+Jede Person hat drei Dinge über sich ausgesagt, eins davon war eine Lüge. 
+
+#### Fragen
+
+- Angenommen wir können Lügen *nicht* erkennen. Wie hoch wäre dann die Wahrscheinlichkeit richtig zu raten?
+
+- Geben Sie unten den `R` Code ein, um auszurechnen, wie viel Richtige Sie erwarten würden, wenn die **Hypothese** *wir können Lügen nicht erkennen* stimmen würde. Zur Erinnerung, die Anzahl der Teilnehmenden wurde in `R` als `n` hinterlegt.
+
+```{r}
+
+```
+
+***
+
+Selbst wenn die Hypothese $\pi = 1/3$ stimmen würde, liegen rein zufällig mal mehr, mal weniger richtig.
+
+`R` Funktionen enthalten Anweisungen, die dem Computer sagen, was er mit einer möglichen Eingabe machen soll. Ähnlich wie in der Mathematik: $f(x)=x^2$. Das Funktionsargument $x$ soll quadriert werden. `R` Funktionen haben einen Namen, und das Funktionsargument (zusammen mit möglichen weiteren Parametern und Optionen) steht in Klammern. Welche Eingaben und Ausgaben eine Funktion hat kann sehr unterschiedlich sein.
+
+Raten (Funktion (`raten()`)) wir `n` mal:
+
+```{r}
+# mein_raten soll das Ergebnis eines n-fachen Ratens sein
+mein_raten <- raten(anzahl = n)
+# mein_raten anzeigen
+mein_raten
+```
+
+#### Fragen
+
+- Wie lautet das Funktionsargument der Funktion `raten()`?
+
+- Haben alle Studierenden das gleiche Ergebnis?
+
+***
+
+Über die Befehle `count()` und `prop()` können wir ermitteln, wie oft wir beim Raten `Ja` erhalten haben, also zufällig richtig lagen. Über `mein_raten == "Ja"`^[`==` ist das logische gleich, `!=` ist ungleich.] wird für jedes Element des Vektors `mein_raten` überprüft, ob es `"Ja"` ist. Viele `R` Funktionen, wie z.B. `count()` und `prop()` dienen der **Modellierung** `y ~ x` und erwarten dies als Funktionsargument. In unserem Fall haben wir (noch) kein `y`, daher können wir dies weglassen.
+
+```{r}
+# Anzahl Richtig: Summe der (zufällig) richtigen Rateversuche 
+count( ~ mein_raten == "Ja")
+# Anteil Richtig:
+prop( ~ mein_raten == "Ja")
+```
+
+
+Um zu überprüfen, ob unser Ergebnis, mit $x = `r x`$ Richtigen bei $n = `r n`$ Versuchen zum **hypothetischen Modell** $\pi=1/3$ kompatibel ist, simulieren wir `1000`-mal (über den Befehl `do()` die Welt, wie sie wäre, wenn wir raten würden.^[Damit alle dasselbe Ergebnis bekommen, steuern wir den Zufall über `set.seed()`.]
+
+```{r}
+# Setze Zufallszahlengenerator
+set.seed(1896)
+# Nullvtlg soll sein: 
+# Wiederhole 1000x: 
+# Rate n-Mal und zähle die Richtigen
+Nullvtlg <- do(1000)* count( ~ raten(anzahl = n) == "Ja")
+```
+
+`Nullvtlg` ist jetzt eine Datentabelle, die 1000 Zeilen und eine Spalte hat.
+
+```{r}
+# Dimension (Zeilen, Spalten)
+dim(Nullvtlg)
+# Obere 6 Beobachtungen
+head(Nullvtlg)
+# Untere 6 Beonachtungen
+tail(Nullvtlg)
+```
+
+In jeder Zeile steht also das Ergebnis einer Simulation. In der Spalte (Variable `n_TRUE`) steht dann jeweils, wie oft in den `r n`-Rateversuchen der jeweiligen Simulation das Ergebnis richtig war. 
+
+Über ein Säulendiagramm (`gf_bar()`) können wir uns anschauen wie viele Richtige wir in unseren 1000 Simulationen jeweils hatten. Damit `R` die Variable `n_TRUE` auch richtig findet, geben wir die Datentabelle `Nullvtlg` als zuätzliches Funktionsargument an.
+
+```{r}
+gf_bar( ~ n_TRUE, data = Nullvtlg)
+```
+
+### Frage
+
+- Welche Anzahl Richtige kommt am Häufigsten vor?
+
+***
+
+Zum Schluss vergleichen wir unser Ergebnis mit den Simulationen, indem wir die Abbildung um eine vertikale Linie (`gf_vline()`) an der Stelle `x` ergänzen (`|>`):
+
+```{r}
+gf_bar( ~ n_TRUE, data = Nullvtlg) |>
+  gf_vline(xintercept = x)
+```
+
+### Frage
+
+- Ist unser Ergebnis, mit $x = `r x`$ Richtigen bei $n = `r n`$ versuchen zum hypothetischen Modell $\pi=1/3$ kompatibel (wahrscheinlich)?
+
